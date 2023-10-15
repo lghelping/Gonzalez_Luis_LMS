@@ -1,0 +1,300 @@
+import java.io.*;
+import java.text.SimpleDateFormat; // Import SimpleDateFormat
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
+
+class User {
+    private String username;
+    private String password;
+
+    // Constructor, login, and logout methods remain the same
+}
+
+class Book {
+    private String title;
+    private String author;
+    private String ISBN;
+    private int quantity;
+    private Date dueDate; // New field to store the due date
+
+    // Constructor
+    public Book(String title, String author, String ISBN, int quantity) {
+        this.title = title;
+        this.author = author;
+        this.ISBN = ISBN;
+        this.quantity = quantity;
+        this.dueDate = null; // Initialize dueDate as null
+    }
+
+    // Getter and setter methods for due date
+    public Date getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    // Getter methods for book attributes
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getISBN() {
+        return ISBN;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    // Public method to update the quantity
+    public void updateQuantity(int newQuantity) {
+        this.quantity = newQuantity;
+    }
+
+    // Override toString method to display book information
+    @Override
+    public String toString() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        String dueDateString = (dueDate != null) ? dateFormat.format(dueDate) : "Not checked out";
+        return "Title: " + title + ", Author: " + author + ", ISBN: " + ISBN + ", Quantity: " + quantity + ", Due Date: " + dueDateString;
+    }
+}
+
+class Transaction {
+    private static int nextTransactionID = 1;
+
+    private int transactionID;
+    private int bookID;
+    private int patronID;
+    private Date transactionDate;
+
+    // Constructor
+    public Transaction(int bookID, int patronID) {
+        this.transactionID = nextTransactionID++;
+        this.bookID = bookID;
+        this.patronID = patronID;
+        this.transactionDate = new Date();
+    }
+
+    // Getter methods for transaction attributes
+    public int getTransactionID() {
+        return transactionID;
+    }
+
+    public int getBookID() {
+        return bookID;
+    }
+
+    public int getPatronID() {
+        return patronID;
+    }
+
+    public Date getTransactionDate() {
+        return transactionDate;
+    }
+}
+
+class Library {
+    private List<Book> books;
+    private List<User> users;
+    private List<Transaction> transactions;
+
+    // Constructor
+    public Library() {
+        this.books = new ArrayList<>();
+        this.users = new ArrayList<>();
+        this.transactions = new ArrayList<>();
+    }
+
+    // Method to add a book to the library
+    public void addBook(String title, String author, String ISBN, int quantity) {
+        Book newBook = new Book(title, author, ISBN, quantity);
+        books.add(newBook);
+        System.out.println("Book added: " + newBook);
+    }
+
+    // Method to remove a book by ISBN
+    public void removeBookByISBN(String ISBN) {
+        for (Book book : books) {
+            if (book.getISBN().equals(ISBN)) {
+                books.remove(book);
+                System.out.println("Book removed: " + book);
+                return;
+            }
+        }
+        System.out.println("Book with ISBN " + ISBN + " not found.");
+    }
+
+    // Method to remove a book by title
+    public void removeBookByTitle(String title) {
+        for (Book book : books) {
+            if (book.getTitle().equals(title)) {
+                books.remove(book);
+                System.out.println("Book removed: " + book);
+                return;
+            }
+        }
+        System.out.println("Book with title " + title + " not found.");
+    }
+
+    // Method to view all books in the library
+    public void viewBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books in the library.");
+            return;
+        }
+        System.out.println("List of Books in the Library:");
+        for (Book book : books) {
+            System.out.println(book);
+        }
+    }
+
+    // Method to check out a book
+    private void checkOutBook(String title, Date dueDate) {
+        for (Book book : books) {
+            if (book.getTitle().equals(title)) {
+                if (book.getQuantity() > 0 && book.getDueDate() == null) {
+                    // Decrease the quantity of the book by 1
+                    book.updateQuantity(book.getQuantity() - 1);
+                    // Set the due date for the checked-out book
+                    book.setDueDate(dueDate);
+
+                    // Create a new transaction record
+                    int patronID = 1; // Replace with the actual patron ID
+                    Transaction transaction = new Transaction(books.indexOf(book), patronID);
+                    transactions.add(transaction);
+
+                    System.out.println("Book checked out: " + book);
+                    return;
+                } else if (book.getQuantity() <= 0) {
+                    System.out.println("Book with title " + title + " is out of stock.");
+                    return;
+                } else {
+                    System.out.println("Book with title " + title + " is already checked out.");
+                    return;
+                }
+            }
+        }
+        System.out.println("Book with title " + title + " not found.");
+    }
+
+    // Method to check in a book
+    private void checkInBook(String title) {
+        for (Book book : books) {
+            if (book.getTitle().equals(title) && book.getDueDate() != null) {
+                // Increase the quantity of the book by 1
+                book.updateQuantity(book.getQuantity() + 1);
+                // Unset the due date for the checked-in book
+
+                book.setDueDate(null);
+
+                // Create a new transaction record
+                int patronID = 1; // Replace with the actual patron ID
+                Transaction transaction = new Transaction(books.indexOf(book), patronID);
+                transactions.add(transaction);
+
+                System.out.println("Book checked in: " + book);
+                return;
+            }
+        }
+        System.out.println("Book with title " + title + " not found or is not checked out.");
+    }
+
+    // Report class to generate library reports
+    static class Report {
+        public void generateReport(List<Book> books, List<Transaction> transactions) {
+            System.out.println("Inventory Report:");
+            for (Book book : books) {
+                System.out.println("Title: " + book.getTitle() + ", ISBN: " + book.getISBN() + ", Quantity: " + book.getQuantity());
+            }
+
+            System.out.println("\nTransaction Report:");
+            for (Transaction transaction : transactions) {
+                System.out.println("Transaction ID: " + transaction.getTransactionID() +
+                        ", Book ID: " + transaction.getBookID() +
+                        ", Patron ID: " + transaction.getPatronID() +
+                        ", Date: " + transaction.getTransactionDate());
+            }
+        }
+    }
+
+    // Method to load books from a file
+    private void loadBooksFromFile(String fileName) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 4) {
+                    String title = parts[0].trim();
+                    String author = parts[1].trim();
+                    String ISBN = parts[2].trim();
+                    int quantity = Integer.parseInt(parts[3].trim());
+                    addBook(title, author, ISBN, quantity);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading books from the file: " + e.getMessage());
+        }
+    }
+
+    // Main method to interact with the user
+    public static void main(String[] args) {
+        Library library = new Library();
+        Scanner scanner = new Scanner(System.in);
+
+        // Task 1: Load books from a file
+        System.out.print("Enter the name of the file to load books from: ");
+        String fileName = scanner.nextLine();
+        library.loadBooksFromFile(fileName);
+
+        // Task 2: Print the database
+        System.out.println("Printing the library database:");
+        library.viewBooks();
+
+        // Task 3: Remove a book by ISBN
+        System.out.print("Enter the ISBN of the book to remove: ");
+        String ISBNToRemove = scanner.nextLine();
+        library.removeBookByISBN(ISBNToRemove);
+
+        // Task 4: Remove a book by title
+        System.out.print("Enter the title of the book to remove: ");
+        String titleToRemove = scanner.nextLine();
+        library.removeBookByTitle(titleToRemove);
+
+        // Task 5: Check out a book
+        System.out.print("Enter the title of the book to check out: ");
+        String titleToCheckOut = scanner.nextLine();
+
+        // Prompt the user for the due date
+        System.out.print("Enter the due date (MM/dd/yyyy): ");
+        String dueDateInput = scanner.nextLine();
+
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+            Date dueDate = dateFormat.parse(dueDateInput);
+            library.checkOutBook(titleToCheckOut, dueDate);
+        } catch (java.text.ParseException e) { // Catch the correct ParseException
+            System.out.println("Invalid due date format. Please use MM/dd/yyyy format.");
+        }
+
+        // Task 6: Check in a book
+        System.out.print("Enter the title of the book to check in: ");
+        String titleToCheckIn = scanner.nextLine();
+        library.checkInBook(titleToCheckIn);
+
+        // Generate a report (you can implement this according to your needs)
+        Library.Report reportGenerator = new Library.Report();
+        reportGenerator.generateReport(library.books, library.transactions);
+
+        // Closing the scanner
+        scanner.close();
+    }
+}
