@@ -38,9 +38,7 @@ import javax.swing.JOptionPane;
  * <p>
  * The Return_book class is part of the GUI package in the library management system.
  *
- * @author Mudassiri
- * @version 1.0
- */
+
 
 public class Return_book extends javax.swing.JFrame {
     /**

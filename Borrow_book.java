@@ -41,9 +41,7 @@ import javax.swing.JOptionPane;
  * <p>
  * The Borrow_book class is part of the GUI package in the library management system.
  *
- * @author Mudassiri
- * @version 1.0
- */
+
 
 public class Borrow_book extends javax.swing.JFrame {
 
